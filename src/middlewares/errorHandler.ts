@@ -9,13 +9,12 @@ export class AppError extends Error {
 }
 
 export const errorHandler = (
-  err: AppError,
+  err: Error,
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
+  const status = err instanceof AppError ? err.status : 500;
   console.error(err);
-  res
-    .status(err.status)
-    .json({ message: err.message || 'Internal Server Error' });
+  res.status(status).json({ message: err.message || 'Internal Server Error' });
 };

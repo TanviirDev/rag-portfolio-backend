@@ -1,10 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/errorHandler.js';
 import { ALLOWED_FILE_TYPES } from '../constants/index.js';
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { vectorStoreRagDoc } from '../service/documentService.js';
 
-export const uploadRagFile = (
+export const uploadRagFile = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -16,6 +15,11 @@ export const uploadRagFile = (
     if (!ALLOWED_FILE_TYPES.includes(req.file.mimetype)) {
       throw new AppError('Invalid file type', 400);
     }
+
+    await vectorStoreRagDoc(req.file);
+    res
+      .status(200)
+      .json({ message: 'File uploaded and vector stored successfully' });
   } catch (error) {
     next(error);
   }

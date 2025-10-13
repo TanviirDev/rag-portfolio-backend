@@ -4,7 +4,7 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import vectorStore from '../config/vectorStore.js';
 import { getDb } from '../config/mongoDb.js';
 
-interface vectorFileMetaData {
+export interface vectorFileMetaData {
   filename: string;
   originalname: string;
   size: number;
