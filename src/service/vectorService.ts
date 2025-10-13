@@ -1,0 +1,54 @@
+import type { Document } from 'langchain/document';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
+import vectorStore from '../config/vectorStore.js';
+import { getDb } from '../config/mongoDb.js';
+
+interface vectorFileMetaData {
+  filename: string;
+  originalname: string;
+  size: number;
+  ids: string[];
+  uploadDate: Date;
+}
+
+const defaultSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 600,
+  chunkOverlap: 100,
+  separators: ['\n\n', '\n', '•', '.', ' ', ''],
+});
+
+export const loadDocument = async (filePath: string) => {
+  const loader = new PDFLoader(filePath);
+  const docs = await loader.load();
+  return docs;
+};
+
+export const splitDocument = async (
+  doc: Document[],
+  splitter: RecursiveCharacterTextSplitter = defaultSplitter,
+) => {
+  const splitDocs = await splitter.splitDocuments(doc);
+  return splitDocs;
+};
+
+export const addDocumentToVectorStore = async (
+  docs: Document[],
+  ids: string[],
+) => {
+  await vectorStore.addDocuments(docs, { ids });
+};
+
+export const storeVectorDocumentMetaData = async (
+  vectorFileMeta: vectorFileMetaData,
+) => {
+  try {
+    const db = getDb();
+    const vectorFileMetaCollection =
+      db.collection<vectorFileMetaData>('vectorFileMetadata');
+    await vectorFileMetaCollection.insertOne(vectorFileMeta);
+    console.log('Vector file metadata stored successfully');
+  } catch (error) {
+    console.error('Database Error:', error);
+  }
+};

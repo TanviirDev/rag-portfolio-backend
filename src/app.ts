@@ -4,15 +4,19 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import fs from 'fs';
+import { connectMongoDB } from './config/mongoDb.js';
 
 const app = express();
+
+await connectMongoDB();
+
 app.use(
   cors({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
   }),
 );
+
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
