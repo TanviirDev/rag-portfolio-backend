@@ -4,6 +4,8 @@ import { OpenAIembeddings as embeddings } from './embeddings.js';
 import dotenv from 'dotenv';
 import type { Db } from 'mongodb';
 
+dotenv.config();
+
 export const client = new MongoClient(process.env.MONGODB_ATLAS_URI || '');
 let myMongoDb: Db;
 

@@ -42,4 +42,8 @@ Thumbs.db
 *.tmp
 *.temp
 
+#ignore uploads
+uploads/*
 
+Tanvir_Resume.pdf
+Payments - Universal Credit.pdf

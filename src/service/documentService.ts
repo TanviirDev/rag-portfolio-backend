@@ -3,22 +3,21 @@ import {
   loadDocument,
   splitDocument,
   storeVectorDocumentMetaData,
+  deleteVectorDocumentByIds,
   type vectorFileMetaData,
 } from './vectorService.js';
-import type { Document } from 'langchain/document';
 import crypto from 'crypto';
 
 export const vectorStoreRagDoc = async (file: Express.Multer.File) => {
-  if (!file) {
-    throw new Error('No file provided for vector storage');
-  }
-
-  const docs = await loadDocument(file.path);
-  const splitDocs = await splitDocument(docs);
-  const ids = splitDocs.map(
+  let docs = await loadDocument(file.path);
+  const contentCharLength = docs
+    .map((doc) => doc.pageContent)
+    .join('\n').length;
+  docs = contentCharLength > 4000 ? await splitDocument(docs) : docs;
+  const ids = docs.map(
     (_, i) => `${file.originalname}-${i}-${crypto.randomUUID()}`,
   );
-  await addDocumentToVectorStore(splitDocs, ids);
+  await addDocumentToVectorStore(docs, ids);
 
   const vectorFileMetaData: vectorFileMetaData = {
     filename: file.filename,
@@ -27,5 +26,11 @@ export const vectorStoreRagDoc = async (file: Express.Multer.File) => {
     ids,
     uploadDate: new Date(),
   };
-  await storeVectorDocumentMetaData(vectorFileMetaData);
+  try {
+    await storeVectorDocumentMetaData(vectorFileMetaData);
+  } catch (error) {
+    await deleteVectorDocumentByIds(ids);
+    console.log('Rolled back vector documents due to metadata storage failure');
+    throw Error('Error storing vector file metadata');
+  }
 };

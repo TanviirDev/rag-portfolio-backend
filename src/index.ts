@@ -47,24 +47,29 @@ import { ChatOpenAI } from '@langchain/openai';
 // console.log(result[0]);
 // console.log(result2[0]);
 
-const promptTemplete = `You are a helpful assistant that helps people find information. Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-{context}
-Question: {question}
-Answer:`;
+// const promptTemplete = `You are a helpful assistant that helps people find information. Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+// {context}
+// Question: {question}
+// Answer:`;
 
-const question =
-  "Can you provide a brief summary of Tanvir's professional background and key skills?";
-const result = await vectorStore.similaritySearch(question, 3);
+// const question =
+//   "Can you provide a brief summary of Tanvir's professional background and key skills?";
+// const result = await vectorStore.similaritySearch(question, 3);
 
-const context = result
-  .map((doc, index) => `Context ${index + 1}:\n${doc.pageContent}\n`)
-  .join('\n');
-const message = promptTemplete
-  .replace('{context}', context)
-  .replace('{question}', question);
+// const context = result
+//   .map((doc, index) => `Context ${index + 1}:\n${doc.pageContent}\n`)
+//   .join('\n');
+// const message = promptTemplete
+//   .replace('{context}', context)
+//   .replace('{question}', question);
 
-const model = new ChatOpenAI({ model: 'gpt-4o-mini' });
-const reply = await model.invoke([{ role: 'user', content: message }]);
-console.log('Reply from Chat Model:', reply.text);
+// const model = new ChatOpenAI({ model: 'gpt-4o-mini' });
+// const reply = await model.invoke([{ role: 'user', content: message }]);
+// console.log('Reply from Chat Model:', reply.text);
 
-await client.close();
+// await client.close();
+
+const loader = new PDFLoader('Payments - Universal Credit.pdf');
+const docs = await loader.load();
+const text = docs.map((doc) => doc.pageContent).join('\n');
+console.log(text.length);

@@ -50,5 +50,27 @@ export const storeVectorDocumentMetaData = async (
     console.log('Vector file metadata stored successfully');
   } catch (error) {
     console.error('Database Error:', error);
+    throw error;
+  }
+};
+
+export const getFileMetaData = async (filename: string) => {
+  try {
+    const db = getDb();
+    const vectorFileMetaCollection =
+      db.collection<vectorFileMetaData>('vectorFileMetadata');
+    const fileData = await vectorFileMetaCollection.findOne({ filename });
+    return fileData;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw error;
+  }
+};
+
+export const deleteVectorDocumentByIds = async (ids: string[]) => {
+  try {
+    await vectorStore.delete({ ids });
+  } catch (error) {
+    console.error('Error deleting documents from vector store:', error);
   }
 };
