@@ -1,9 +1,7 @@
 import express from 'express';
-import bookRoutes from './routes/bookRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import multer from 'multer';
 import { connectMongoDB } from './config/mongoDb.js';
 
 const app = express();
@@ -40,7 +38,6 @@ app.get('/', (req: Request, res: Response) => {
 //   },
 // );
 
-app.use('/books', bookRoutes);
 app.use(errorHandler);
 
 export default app;

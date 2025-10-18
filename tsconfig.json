@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
-    "types": [],
+    "types": ["node", "jest"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
 
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -17,7 +21,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -28,6 +31,6 @@
   "ts-node": {
     "esm": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules"]
 }

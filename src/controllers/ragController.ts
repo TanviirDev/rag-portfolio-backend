@@ -13,13 +13,16 @@ export const uploadRagFile = async (
       throw new AppError('No file uploaded', 400);
     }
     if (!ALLOWED_FILE_TYPES.includes(req.file.mimetype)) {
-      throw new AppError('Invalid file type', 400);
+      throw new AppError('Invalid file type', 415);
     }
 
     await vectorStoreRagDoc(req.file);
-    res
-      .status(200)
-      .json({ message: 'File uploaded and vector stored successfully' });
+    res.status(200).json({
+      message: 'File uploaded and vector stored successfully',
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      size: req.file.size,
+    });
   } catch (error) {
     next(error);
   }
