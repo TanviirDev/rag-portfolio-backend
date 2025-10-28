@@ -15,7 +15,8 @@ export const vectorStoreRagDoc = async (file: Express.Multer.File) => {
     .join('\n').length;
   docs = contentCharLength > 4000 ? await splitDocument(docs) : docs;
   const ids = docs.map(
-    (_, i) => `${file.originalname}-${i}-${crypto.randomUUID()}`,
+    (_, i) =>
+      `${file.originalname}-${i}-${crypto.randomBytes(8).toString('base64url')}`,
   );
   await addDocumentToVectorStore(docs, ids);
 
@@ -31,6 +32,6 @@ export const vectorStoreRagDoc = async (file: Express.Multer.File) => {
   } catch (error) {
     await deleteVectorDocumentByIds(ids);
     console.log('Rolled back vector documents due to metadata storage failure');
-    throw Error('Error storing vector file metadata');
+    throw new Error('Error storing vector file metadata');
   }
 };

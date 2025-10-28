@@ -54,7 +54,7 @@ export const storeVectorDocumentMetaData = async (
   }
 };
 
-export const getFileMetaData = async (filename: string) => {
+export const getVectorDocumentMetaData = async (filename: string) => {
   try {
     const db = getDb();
     const vectorFileMetaCollection =
@@ -67,10 +67,23 @@ export const getFileMetaData = async (filename: string) => {
   }
 };
 
+export const deleteVectorDocumentMetaData = async (filename: string) => {
+  try {
+    const db = getDb();
+    const vectorFileMetaCollection =
+      db.collection<vectorFileMetaData>('vectorFileMetadata');
+    await vectorFileMetaCollection.deleteOne({ filename });
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw error;
+  }
+};
+
 export const deleteVectorDocumentByIds = async (ids: string[]) => {
   try {
     await vectorStore.delete({ ids });
   } catch (error) {
     console.error('Error deleting documents from vector store:', error);
+    throw error;
   }
 };

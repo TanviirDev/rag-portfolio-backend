@@ -3,6 +3,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { connectMongoDB } from './config/mongoDb.js';
+import ragRouter from './routes/ragRoutes.js';
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use(ragRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('API is running');

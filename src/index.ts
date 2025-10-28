@@ -4,6 +4,12 @@ import type { Document } from '@langchain/core/documents';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { ChatOpenAI } from '@langchain/openai';
+import {
+  getVectorDocumentMetaData,
+  deleteVectorDocumentByIds,
+  deleteVectorDocumentMetaData,
+} from './service/vectorService.js';
+import { connectMongoDB } from './config/mongoDb.js';
 
 // const testdoc: Document = {
 //   pageContent: `The Lantern and the Wind
@@ -69,7 +75,26 @@ import { ChatOpenAI } from '@langchain/openai';
 
 // await client.close();
 
-const loader = new PDFLoader('Payments - Universal Credit.pdf');
-const docs = await loader.load();
-const text = docs.map((doc) => doc.pageContent).join('\n');
-console.log(text.length);
+// const loader = new PDFLoader('Payments - Universal Credit.pdf');
+// const docs = await loader.load();
+// const text = docs.map((doc) => doc.pageContent).join('\n');
+// console.log(text.length);
+
+//DELETE VECTOR DOCUMENTS AND METADATA BY FILENAME
+await connectMongoDB();
+try {
+  const fileData = await getVectorDocumentMetaData(
+    '1760797890769-Tanvir_resume.pdf',
+  );
+  if (fileData) {
+    const ids = fileData!.ids || [];
+    // await deleteVectorDocumentByIds(ids);
+    // await deleteVectorDocumentMetaData('1760797890769-Tanvir_resume.pdf');
+    // await deleteUploadedFileFromServer('1760797890769-Tanvir_resume.pdf');
+
+    console.log('Deleted vector documents and metadata successfully');
+  }
+  console.log('done');
+} catch (error) {
+  console.error('Error fetching vector document metadata:', error);
+}
