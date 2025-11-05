@@ -1,6 +1,4 @@
-import { MongoDBAtlasVectorSearch } from '@langchain/mongodb';
 import { MongoClient } from 'mongodb';
-import { OpenAIembeddings as embeddings } from './embeddings.js';
 import dotenv from 'dotenv';
 import type { Db } from 'mongodb';
 
