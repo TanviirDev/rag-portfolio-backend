@@ -214,8 +214,25 @@ describe('getVectorDocumentMetaDataByFilename', () => {
     expect(mockCollection.findOne).toHaveBeenCalledWith({ filename });
     expect(result).toEqual(mockFileData);
   });
-  it('should return null if no metadata found for the filename', async () => {});
-  it('should handle database errors during metadata retrieval', async () => {});
+  it('should return null if no metadata found for the filename', async () => {
+    mockCollection.findOne.mockResolvedValueOnce(null);
+    const result = await getVectorDocumentMetaDataByFileName(filename);
+    expect(getDb).toHaveBeenCalled();
+    expect(mockDb.collection).toHaveBeenCalledWith('vectorFileMetadata');
+    expect(mockCollection.findOne).toHaveBeenCalledWith({ filename });
+    expect(result).toBeNull();
+  });
+  it('should handle database errors during metadata retrieval', async () => {
+    const mockError = new Error('Database Error');
+    mockCollection.findOne.mockRejectedValueOnce(mockError);
+    await expect(getVectorDocumentMetaDataByFileName(filename)).rejects.toThrow(
+      mockError,
+    );
+    expect(getDb).toHaveBeenCalled();
+    expect(mockDb.collection).toHaveBeenCalledWith('vectorFileMetadata');
+    expect(mockCollection.findOne).toHaveBeenCalledWith({ filename });
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Database Error:', mockError);
+  });
 });
 describe('deleteVectorDocumentMetaDataByFilename', () => {});
 describe('deleteVectorDocumentByIds', () => {});
