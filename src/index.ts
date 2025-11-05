@@ -5,11 +5,14 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { ChatOpenAI } from '@langchain/openai';
 import {
-  getVectorDocumentMetaData,
+  getVectorDocumentMetaDataByFileName,
   deleteVectorDocumentByIds,
-  deleteVectorDocumentMetaData,
+  deleteVectorDocumentMetaDataByFileName,
 } from './service/vectorService.js';
-import { connectMongoDB } from './config/mongoDb.js';
+import { connectMongoDB, disconnectMongoDB, getDb } from './config/mongoDb.js';
+import { deleteUploadedFileFromServer } from './service/documentService.js';
+
+await connectMongoDB();
 
 // const testdoc: Document = {
 //   pageContent: `The Lantern and the Wind
@@ -81,20 +84,25 @@ import { connectMongoDB } from './config/mongoDb.js';
 // console.log(text.length);
 
 //DELETE VECTOR DOCUMENTS AND METADATA BY FILENAME
-await connectMongoDB();
-try {
-  const fileData = await getVectorDocumentMetaData(
-    '1760797890769-Tanvir_resume.pdf',
-  );
-  if (fileData) {
-    const ids = fileData!.ids || [];
-    // await deleteVectorDocumentByIds(ids);
-    // await deleteVectorDocumentMetaData('1760797890769-Tanvir_resume.pdf');
-    // await deleteUploadedFileFromServer('1760797890769-Tanvir_resume.pdf');
+// await connectMongoDB();
+// try {
+//   const fileData = await getVectorDocumentMetaData(
+//     '1760797890769-Tanvir_resume.pdf',
+//   );
+//   if (fileData) {
+//     const ids = fileData!.ids || [];
+//     // await deleteVectorDocumentByIds(ids);
+//     // await deleteVectorDocumentMetaData('1760797890769-Tanvir_resume.pdf');
+//     // await deleteUploadedFileFromServer('1760797890769-Tanvir_resume.pdf');
 
-    console.log('Deleted vector documents and metadata successfully');
-  }
-  console.log('done');
-} catch (error) {
-  console.error('Error fetching vector document metadata:', error);
-}
+//     console.log('Deleted vector documents and metadata successfully');
+//   }
+//   console.log('done');
+// } catch (error) {
+//   console.error('Error fetching vector document metadata:', error);
+// }
+
+//USAGE OF deleteUploadedFileFromServer
+// deleteUploadedFileFromServer('Payments - Universal Credit.pdf');
+
+await disconnectMongoDB();

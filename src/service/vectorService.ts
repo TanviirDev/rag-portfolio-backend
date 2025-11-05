@@ -12,31 +12,53 @@ export interface vectorFileMetaData {
   uploadDate: Date;
 }
 
-const defaultSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 600,
-  chunkOverlap: 100,
-  separators: ['\n\n', '\n', '•', '.', ' ', ''],
-});
+let defaultSplitter: RecursiveCharacterTextSplitter | undefined;
 
+const getDefaultSplitter = () => {
+  if (!defaultSplitter) {
+    defaultSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 600,
+      chunkOverlap: 100,
+      separators: ['\n\n', '\n', '•', '.', ' ', ''],
+    });
+  }
+  return defaultSplitter;
+};
 export const loadDocument = async (filePath: string) => {
-  const loader = new PDFLoader(filePath);
-  const docs = await loader.load();
-  return docs;
+  try {
+    const loader = new PDFLoader(filePath);
+    const docs = await loader.load();
+    return docs;
+  } catch (error) {
+    console.error('Error loading document:', error);
+    throw error;
+  }
 };
 
-export const splitDocument = async (
+export const splitDocuments = async (
   doc: Document[],
-  splitter: RecursiveCharacterTextSplitter = defaultSplitter,
+  splitter?: RecursiveCharacterTextSplitter,
 ) => {
-  const splitDocs = await splitter.splitDocuments(doc);
-  return splitDocs;
+  splitter = splitter ?? getDefaultSplitter();
+  try {
+    const splitDocs = await splitter.splitDocuments(doc);
+    return splitDocs;
+  } catch (error) {
+    console.error('Error splitting document:', error);
+    throw error;
+  }
 };
 
 export const addDocumentToVectorStore = async (
   docs: Document[],
   ids: string[],
 ) => {
-  await vectorStore.addDocuments(docs, { ids });
+  try {
+    await vectorStore.addDocuments(docs, { ids });
+  } catch (error) {
+    console.error('Error adding documents to vector store:', error);
+    throw error;
+  }
 };
 
 export const storeVectorDocumentMetaData = async (
@@ -54,7 +76,7 @@ export const storeVectorDocumentMetaData = async (
   }
 };
 
-export const getVectorDocumentMetaData = async (filename: string) => {
+export const getVectorDocumentMetaDataByFileName = async (filename: string) => {
   try {
     const db = getDb();
     const vectorFileMetaCollection =
@@ -67,7 +89,9 @@ export const getVectorDocumentMetaData = async (filename: string) => {
   }
 };
 
-export const deleteVectorDocumentMetaData = async (filename: string) => {
+export const deleteVectorDocumentMetaDataByFileName = async (
+  filename: string,
+) => {
   try {
     const db = getDb();
     const vectorFileMetaCollection =

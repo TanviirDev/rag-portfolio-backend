@@ -1,58 +1,126 @@
-/**
- * tests/unit/services/vectorService.test.ts
- *
- * Unit tests for loadDocument in src/service/vectorService.ts
- *
- * Assumes a Jest test runner.
- */
+import { loadDocument } from '@/service/vectorService.js';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
+import { splitDocuments } from '@/service/vectorService.js';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { mock } from 'node:test';
 
 const mockLoad = jest.fn();
+const mockSplitDocuments = jest.fn();
 
 jest.mock('@langchain/community/document_loaders/fs/pdf', () => {
   return {
-    PDFLoader: jest.fn().mockImplementation((filePath: string) => ({
-      load: mockLoad,
-      // expose filePath if needed for debugging; constructor call is asserted via mock
-      _filePath: filePath,
+    PDFLoader: jest
+      .fn()
+      .mockImplementation((filePath: string) => ({ load: mockLoad })),
+  };
+});
+
+jest.mock('langchain/text_splitter', () => {
+  return {
+    RecursiveCharacterTextSplitter: jest.fn().mockImplementation(() => ({
+      splitDocuments: mockSplitDocuments,
     })),
   };
 });
 
-describe('vectorService.loadDocument', () => {
+// jest.mock('langchain/text_splitter', () => {
+//   const mockSplitDocuments = jest.fn();
+//   return {
+//     RecursiveCharacterTextSplitter: jest.fn().mockImplementation(() => ({
+//       splitDocuments: mockSplitDocuments,
+//     })),
+//     mockSplitDocuments,
+//   };
+// });
+
+// const { mockSplitDocuments } = jest.requireMock('langchain/text_splitter');
+
+let consoleErrorSpy: jest.SpyInstance;
+beforeAll(() => {
+  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+});
+
+afterAll(() => {
+  jest.restoreAllMocks();
+});
+
+describe('loadDocument', () => {
   beforeEach(() => {
-    jest.resetModules();
     mockLoad.mockReset();
   });
-
-  test('calls PDFLoader with provided filePath and returns loaded documents', async () => {
-    const fakeDocs = [{ pageContent: 'page1' }, { pageContent: 'page2' }];
-    mockLoad.mockResolvedValueOnce(fakeDocs);
-
-    const { loadDocument } = await import('../../../src/service/vectorService');
+  it('should load and return documents from a PDF file', async () => {
     const filePath = 'path/to/test.pdf';
+    const mockDocuments = [
+      { pageContent: 'Test content', metadata: {} },
+      { pageContent: 'More content', metadata: {} },
+    ];
+    mockLoad.mockResolvedValue(mockDocuments);
 
-    const docs = await loadDocument(filePath);
+    const documents = await loadDocument(filePath);
 
-    // ensure the mocked load was called and returned the docs
-    expect(mockLoad).toHaveBeenCalledTimes(1);
-    expect(docs).toBe(fakeDocs);
-
-    // ensure PDFLoader constructor was called with the correct argument
-    const pdfModule = jest.requireMock(
-      '@langchain/community/document_loaders/fs/pdf',
-    ) as { PDFLoader: jest.Mock };
-    expect(pdfModule.PDFLoader).toHaveBeenCalledWith(filePath);
+    expect(PDFLoader).toHaveBeenCalledWith(filePath);
+    expect(mockLoad).toHaveBeenCalled();
+    expect(documents).toEqual(mockDocuments);
   });
+  it('should handle errors during document loading', async () => {
+    const filePath = 'path/to/invalid.pdf';
+    const mockError = new Error('Error loading document');
+    mockLoad.mockRejectedValue(mockError);
 
-  test('propagates errors thrown by the PDFLoader.load method', async () => {
-    const err = new Error('failed to load PDF');
-    mockLoad.mockRejectedValueOnce(err);
-
-    const { loadDocument } = await import('../../../src/service/vectorService');
-
-    await expect(loadDocument('some/other.pdf')).rejects.toThrow(
-      'failed to load PDF',
-    );
+    await expect(loadDocument(filePath)).rejects.toThrow(mockError);
+    expect(PDFLoader).toHaveBeenCalledWith(filePath);
     expect(mockLoad).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error loading document:',
+      mockError,
+    );
   });
 });
+
+describe('splitDocument', () => {
+  const mockDocs = [
+    {
+      pageContent: 'This is a long document that needs splitting.',
+      metadata: {},
+    },
+  ];
+  const mockSplitDocs = [
+    { pageContent: 'This is a long document', metadata: {} },
+    { pageContent: 'that needs splitting.', metadata: {} },
+  ];
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSplitDocuments.mockImplementation(async (docs: any[]) => mockSplitDocs);
+  });
+  afterEach(() => {});
+
+  it('should split documents using the default splitter', async () => {
+    const splitDocs = await splitDocuments(mockDocs);
+    expect(RecursiveCharacterTextSplitter).toHaveBeenCalled();
+    expect(mockSplitDocuments).toHaveBeenCalledWith(mockDocs);
+    expect(splitDocs).toEqual(mockSplitDocs);
+  });
+  it('should split documents using a provided splitter', async () => {
+    const customSplitter = { splitDocuments: mockSplitDocuments } as any;
+    const splitDocs = await splitDocuments(mockDocs, customSplitter);
+    expect(mockSplitDocuments).toHaveBeenCalledWith(mockDocs);
+    expect(RecursiveCharacterTextSplitter).not.toHaveBeenCalled();
+    expect(splitDocs).toEqual(mockSplitDocs);
+  });
+  it('should handle errors during document splitting', async () => {
+    const mockError = new Error('Error splitting document');
+    mockSplitDocuments.mockRejectedValueOnce(mockError);
+    await expect(splitDocuments(mockDocs)).rejects.toThrow(mockError);
+    expect(mockSplitDocuments).toHaveBeenCalledWith(mockDocs);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error splitting document:',
+      mockError,
+    );
+  });
+});
+
+describe('addDocumentToVectorStore', () => {});
+describe('storeVectorDocumentMetaData', () => {});
+describe('getVectorDocumentMetaDataByFilename', () => {});
+describe('deleteVectorDocumentMetaDataByFilename', () => {});
+describe('deleteVectorDocumentByIds', () => {});
