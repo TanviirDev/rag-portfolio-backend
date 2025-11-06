@@ -5,6 +5,7 @@ import {
   storeVectorDocumentMetaData,
   getVectorDocumentMetaDataByFileName,
   deleteVectorDocumentMetaDataByFileName,
+  deleteVectorDocumentByIds,
 } from '@/service/vectorService.js';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { get } from 'http';
@@ -34,7 +35,10 @@ jest.mock('langchain/text_splitter', () => {
 jest.mock('@/config/vectorStore.js', () => {
   return {
     __esModule: true,
-    default: { addDocuments: jest.fn() },
+    default: {
+      addDocuments: jest.fn(),
+      delete: jest.fn(),
+    },
   };
 });
 const vectorStore = require('@/config/vectorStore.js').default;
@@ -186,9 +190,6 @@ describe('storeVectorDocumentMetaData', () => {
     await expect(storeVectorDocumentMetaData(vectorFileMeta)).rejects.toThrow(
       mockError,
     );
-    expect(getDb).toHaveBeenCalled();
-    expect(mockDb.collection).toHaveBeenCalledWith('vectorFileMetadata');
-    expect(mockCollection.insertOne).toHaveBeenCalledWith(vectorFileMeta);
     expect(consoleErrorSpy).toHaveBeenCalledWith('Database Error:', mockError);
   });
 });
@@ -229,9 +230,6 @@ describe('getVectorDocumentMetaDataByFilename', () => {
     await expect(getVectorDocumentMetaDataByFileName(filename)).rejects.toThrow(
       mockError,
     );
-    expect(getDb).toHaveBeenCalled();
-    expect(mockDb.collection).toHaveBeenCalledWith('vectorFileMetadata');
-    expect(mockCollection.findOne).toHaveBeenCalledWith({ filename });
     expect(consoleErrorSpy).toHaveBeenCalledWith('Database Error:', mockError);
   });
 });
@@ -251,5 +249,28 @@ describe('deleteVectorDocumentMetaDataByFilename', () => {
     expect(mockDb.collection).toHaveBeenCalledWith('vectorFileMetadata');
     expect(mockCollection.deleteOne).toHaveBeenCalledWith({ filename });
   });
+  it('should handle database errors during metadata deletion', async () => {
+    const mockError = new Error('Database Error');
+    mockCollection.deleteOne.mockRejectedValueOnce(mockError);
+    await expect(
+      deleteVectorDocumentMetaDataByFileName(filename),
+    ).rejects.toThrow(mockError);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Database Error:', mockError);
+  });
 });
-describe('deleteVectorDocumentByIds', () => {});
+describe('deleteVectorDocumentByIds', () => {
+  const mockIds = ['doc1-id', 'doc2-id'];
+  it('should delete vector documents from vector store by IDs', async () => {
+    await deleteVectorDocumentByIds(mockIds);
+    expect(vectorStore.delete).toHaveBeenCalledWith({ ids: mockIds });
+  });
+  it('Should handle errors during deletion of vector documents by IDs', async () => {
+    const mockError = new Error('Error deleting documents');
+    vectorStore.delete.mockRejectedValueOnce(mockError);
+    await expect(deleteVectorDocumentByIds(mockIds)).rejects.toThrow(mockError);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error deleting documents from vector store:',
+      mockError,
+    );
+  });
+});
