@@ -4,6 +4,7 @@ import {
   addDocumentToVectorStore,
   storeVectorDocumentMetaData,
   getVectorDocumentMetaDataByFileName,
+  deleteVectorDocumentMetaDataByFileName,
 } from '@/service/vectorService.js';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { get } from 'http';
@@ -202,7 +203,7 @@ describe('getVectorDocumentMetaDataByFilename', () => {
   });
   const filename = 'testfile.pdf';
 
-  it('should retrieve vector document metadata by filename', async () => {
+  it('should retrieve vector document metadata by filename from mongodb', async () => {
     const mockFileData = {
       filename: 'testfile.pdf',
       originalname: 'original_testfile.pdf',
@@ -234,5 +235,21 @@ describe('getVectorDocumentMetaDataByFilename', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith('Database Error:', mockError);
   });
 });
-describe('deleteVectorDocumentMetaDataByFilename', () => {});
+describe('deleteVectorDocumentMetaDataByFilename', () => {
+  let mockCollection: any;
+  let mockDb: any;
+  beforeEach(() => {
+    getDb.mockClear();
+    mockCollection = { deleteOne: jest.fn() };
+    mockDb = { collection: jest.fn().mockReturnValue(mockCollection) };
+    getDb.mockReturnValue(mockDb);
+  });
+  const filename = 'testfile.pdf';
+  it('should delete vector document metadata by filename from mongodb', async () => {
+    await deleteVectorDocumentMetaDataByFileName(filename);
+    expect(getDb).toHaveBeenCalled();
+    expect(mockDb.collection).toHaveBeenCalledWith('vectorFileMetadata');
+    expect(mockCollection.deleteOne).toHaveBeenCalledWith({ filename });
+  });
+});
 describe('deleteVectorDocumentByIds', () => {});
