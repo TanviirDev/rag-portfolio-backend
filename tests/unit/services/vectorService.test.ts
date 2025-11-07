@@ -8,7 +8,6 @@ import {
   deleteVectorDocumentByIds,
 } from '@/service/vectorService.js';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { get } from 'http';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
 //LOADER MOCK
@@ -53,8 +52,10 @@ jest.mock('@/config/mongoDb.js', () => {
 const { getDb } = require('@/config/mongoDb.js');
 
 let consoleErrorSpy: jest.SpyInstance;
+let consoleLogSpy: jest.SpyInstance;
 beforeAll(() => {
   consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+  consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 });
 
 afterAll(() => {
