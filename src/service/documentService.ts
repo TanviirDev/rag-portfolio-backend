@@ -58,7 +58,7 @@ export const deleteUploadedFileFromServer = async (fileName: string) => {
     await fs.unlink(filePath);
     console.log(`Deleted file from server: ${fileName}`);
   } catch (error) {
-    console.log(`File not found on server: ${fileName}`);
+    console.error(`File not found on server: ${fileName}`);
     throw error;
   }
 };
