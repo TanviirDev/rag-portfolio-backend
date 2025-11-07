@@ -5,26 +5,28 @@ import {
   splitDocuments,
   storeVectorDocumentMetaData,
   deleteVectorDocumentByIds,
-  type vectorFileMetaData,
+  type VectorFileMetaData,
 } from './vectorService.js';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import { MAX_CONTENT_CHARS } from '../constants/index.js';
 
-export const vectorStoreRagDoc = async (file: Express.Multer.File) => {
-  let docs = await loadDocument(file.path);
-  const contentCharLength = docs
-    .map((doc) => doc.pageContent)
-    .join('\n').length;
-  docs =
+export const ingestRagFile = async (file: Express.Multer.File) => {
+  const docs = await loadDocument(file.path);
+  const contentCharLength = docs.reduce(
+    (acc, doc) => acc + doc.pageContent.length,
+    0,
+  );
+
+  const processedDocs =
     contentCharLength > MAX_CONTENT_CHARS ? await splitDocuments(docs) : docs;
-  const ids = docs.map(
+  const ids = processedDocs.map(
     (_, i) =>
       `${file.originalname}-${i}-${crypto.randomBytes(8).toString('base64url')}`,
   );
-  await addDocumentToVectorStore(docs, ids);
+  await addDocumentToVectorStore(processedDocs, ids);
 
-  const vectorFileMetaData: vectorFileMetaData = {
+  const vectorFileMetaData: VectorFileMetaData = {
     filename: file.filename,
     originalname: file.originalname,
     size: file.size,
@@ -34,9 +36,17 @@ export const vectorStoreRagDoc = async (file: Express.Multer.File) => {
   try {
     await storeVectorDocumentMetaData(vectorFileMetaData);
   } catch (error) {
-    await deleteVectorDocumentByIds(ids);
-    await deleteUploadedFileFromServer(file.filename);
-    console.log('Rolled back vector documents due to metadata storage failure');
+    await deleteVectorDocumentByIds(ids).catch((err) => {
+      console.error('Error deleting vector documents during rollback:', err);
+      throw err;
+    });
+    await deleteUploadedFileFromServer(file.filename).catch((err) => {
+      console.error('Error deleting uploaded file during rollback:', err);
+      throw err;
+    });
+    console.error(
+      'Rolled back vector documents due to metadata storage failure',
+    );
     throw new Error('Error storing vector file metadata');
   }
 };
@@ -49,6 +59,6 @@ export const deleteUploadedFileFromServer = async (fileName: string) => {
     console.log(`Deleted file from server: ${fileName}`);
   } catch (error) {
     console.log(`File not found on server: ${fileName}`);
-    return;
+    throw error;
   }
 };

@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/errorHandler.js';
 import { ALLOWED_FILE_TYPES } from '../constants/index.js';
-import { vectorStoreRagDoc } from '../service/documentService.js';
+import { ingestRagFile } from '../service/documentService.js';
 
 export const uploadRagFile = async (
   req: Request,
@@ -16,7 +16,7 @@ export const uploadRagFile = async (
       throw new AppError('Invalid file type', 415);
     }
 
-    await vectorStoreRagDoc(req.file);
+    await ingestRagFile(req.file);
     res.status(200).json({
       message: 'File uploaded and vector stored successfully',
       filename: req.file.filename,

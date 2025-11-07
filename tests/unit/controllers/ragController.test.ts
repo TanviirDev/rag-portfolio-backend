@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { uploadRagFile } from '../../../src/controllers/ragController.js';
-import { AppError } from '../../../src/middlewares/errorHandler.js';
-import { ALLOWED_FILE_TYPES } from '../../../src/constants/index.js';
+import { uploadRagFile } from '@/controllers/ragController.js';
+import { AppError } from '@/middlewares/errorHandler.js';
+import { ALLOWED_FILE_TYPES } from '@/constants/index.js';
 import type { Request, Response, NextFunction } from 'express';
-import * as documentService from '../../../src/service/documentService.js';
+import * as documentService from '@/service/documentService.js';
 
 describe('Rag Controller', () => {
   const mockRes = {
@@ -48,7 +48,7 @@ describe('Rag Controller', () => {
         file,
       } as unknown as Request;
       const spyOnVectorStoreRagDoc = jest
-        .spyOn(documentService, 'vectorStoreRagDoc')
+        .spyOn(documentService, 'ingestRagFile')
         .mockResolvedValue(undefined);
 
       await uploadRagFile(mockReq, mockRes, mockNext);
@@ -65,7 +65,7 @@ describe('Rag Controller', () => {
       } as unknown as Request;
 
       const spyOnVectorStoreRagDoc = jest
-        .spyOn(documentService, 'vectorStoreRagDoc')
+        .spyOn(documentService, 'ingestRagFile')
         .mockRejectedValue(new Error('Service Error'));
 
       await uploadRagFile(mockReq, mockRes, mockNext);

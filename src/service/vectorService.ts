@@ -4,7 +4,7 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import vectorStore from '../config/vectorStore.js';
 import { getDb } from '../config/mongoDb.js';
 
-export interface vectorFileMetaData {
+export interface VectorFileMetaData {
   filename: string;
   originalname: string;
   size: number;
@@ -62,12 +62,12 @@ export const addDocumentToVectorStore = async (
 };
 
 export const storeVectorDocumentMetaData = async (
-  vectorFileMeta: vectorFileMetaData,
+  vectorFileMeta: VectorFileMetaData,
 ) => {
   try {
     const db = getDb();
     const vectorFileMetaCollection =
-      db.collection<vectorFileMetaData>('vectorFileMetadata');
+      db.collection<VectorFileMetaData>('vectorFileMetadata');
     await vectorFileMetaCollection.insertOne(vectorFileMeta);
     console.log('Vector file metadata stored successfully');
   } catch (error) {
@@ -80,7 +80,7 @@ export const getVectorDocumentMetaDataByFileName = async (filename: string) => {
   try {
     const db = getDb();
     const vectorFileMetaCollection =
-      db.collection<vectorFileMetaData>('vectorFileMetadata');
+      db.collection<VectorFileMetaData>('vectorFileMetadata');
     const fileData = await vectorFileMetaCollection.findOne({ filename });
     return fileData;
   } catch (error) {
@@ -95,7 +95,7 @@ export const deleteVectorDocumentMetaDataByFileName = async (
   try {
     const db = getDb();
     const vectorFileMetaCollection =
-      db.collection<vectorFileMetaData>('vectorFileMetadata');
+      db.collection<VectorFileMetaData>('vectorFileMetadata');
     await vectorFileMetaCollection.deleteOne({ filename });
   } catch (error) {
     console.error('Database Error:', error);
