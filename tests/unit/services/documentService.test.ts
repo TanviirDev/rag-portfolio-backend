@@ -40,8 +40,8 @@ describe('documentService', () => {
       path: 'uploads/large_test.pdf',
       size: 2048,
     };
+    const mockDocs = [{ pageContent: 'Short content' }];
     it('should store the vector document and its metadata successfully without splitting the document if the document character is less than MAX_CONTENT_CHARS ', async () => {
-      const mockDocs = [{ pageContent: 'Short content' }];
       (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
@@ -95,7 +95,6 @@ describe('documentService', () => {
         require('@/service/documentService.js'),
         'deleteUploadedFileFromServer',
       );
-      const mockDocs = [{ pageContent: 'Short content' }];
       (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
@@ -118,6 +117,51 @@ describe('documentService', () => {
       );
       expect(vectorService.storeVectorDocumentMetaData).toHaveBeenCalledWith(
         expect.any(Object) as VectorFileMetaData,
+      );
+    });
+    it('should log error if rollback deletion of vector documents fails', async () => {
+      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
+      (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+      (
+        vectorService.storeVectorDocumentMetaData as jest.Mock
+      ).mockRejectedValue(new Error('Metadata storage failed'));
+      (
+        vectorService.deleteVectorDocumentByIds as jest.Mock
+      ).mockRejectedValueOnce(new Error('Vector document deletion failed'));
+      await expect(
+        ingestRagFile(mockFile as Express.Multer.File),
+      ).rejects.toThrow('Vector document deletion failed');
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error deleting vector documents during rollback:',
+        expect.any(Error),
+      );
+    });
+    it('should log error if rollback deletion of uploaded file fails to be deleted', async () => {
+      const deleteUploadedFileFromServerSpy = jest.spyOn(
+        require('@/service/documentService.js'),
+        'deleteUploadedFileFromServer',
+      );
+      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
+      (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+      (
+        vectorService.storeVectorDocumentMetaData as jest.Mock
+      ).mockRejectedValue(new Error('Metadata storage failed'));
+      (vectorService.deleteVectorDocumentByIds as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+      deleteUploadedFileFromServerSpy.mockRejectedValueOnce(
+        new Error('Uploaded file deletion failed'),
+      );
+      await expect(
+        ingestRagFile(mockFile as Express.Multer.File),
+      ).rejects.toThrow('Uploaded file deletion failed');
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error deleting uploaded file during rollback:',
+        expect.any(Error),
       );
     });
   });
