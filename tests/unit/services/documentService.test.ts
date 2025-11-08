@@ -5,7 +5,6 @@ import {
 import type { VectorFileMetaData } from '@/service/vectorService.js';
 
 jest.mock('@/service/vectorService.js', () => ({
-  _esModule: true,
   loadDocument: jest.fn(),
   splitDocuments: jest.fn(),
   addDocumentToVectorStore: jest.fn(),
@@ -28,8 +27,14 @@ afterAll(() => {
 
 describe('documentService', () => {
   describe('ingestRagFile', () => {
+    const deleteUploadedFileFromServerSpy = jest.spyOn(
+      require('@/service/documentService.js'),
+      'deleteUploadedFileFromServer',
+    );
+    const mockDocs = [{ pageContent: 'Short content' }];
     beforeEach(() => {
       jest.clearAllMocks();
+      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
     });
     afterAll(() => {
       jest.restoreAllMocks();
@@ -40,9 +45,7 @@ describe('documentService', () => {
       path: 'uploads/large_test.pdf',
       size: 2048,
     };
-    const mockDocs = [{ pageContent: 'Short content' }];
     it('should store the vector document and its metadata successfully without splitting the document if the document character is less than MAX_CONTENT_CHARS ', async () => {
-      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
       );
@@ -69,7 +72,7 @@ describe('documentService', () => {
         { pageContent: 'A'.repeat(2000) },
         { pageContent: 'A'.repeat(2000) },
       ];
-      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
+      (vectorService.loadDocument as jest.Mock).mockResolvedValueOnce(mockDocs);
       (vectorService.splitDocuments as jest.Mock).mockResolvedValue(splitDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
@@ -91,11 +94,6 @@ describe('documentService', () => {
       );
     });
     it('should rollback vector document storage if metadata storage fails and throw error', async () => {
-      const deleteUploadedFileFromServerSpy = jest.spyOn(
-        require('@/service/documentService.js'),
-        'deleteUploadedFileFromServer',
-      );
-      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
       );
@@ -120,7 +118,6 @@ describe('documentService', () => {
       );
     });
     it('should log error if rollback deletion of vector documents fails', async () => {
-      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
       );
@@ -139,11 +136,6 @@ describe('documentService', () => {
       );
     });
     it('should log error if rollback deletion of uploaded file fails to be deleted', async () => {
-      const deleteUploadedFileFromServerSpy = jest.spyOn(
-        require('@/service/documentService.js'),
-        'deleteUploadedFileFromServer',
-      );
-      (vectorService.loadDocument as jest.Mock).mockResolvedValue(mockDocs);
       (vectorService.addDocumentToVectorStore as jest.Mock).mockResolvedValue(
         undefined,
       );
