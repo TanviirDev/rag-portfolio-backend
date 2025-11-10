@@ -38,4 +38,13 @@ describe('Error Handler Middleware', () => {
     });
     expect(consoleErrorMock).toHaveBeenCalledWith(genericError);
   });
+  it('should respond with 500 status and default message if error has no message', () => {
+    const genericError = new Error();
+    errorHandler(genericError, mockReq, mockRes, mockNext);
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(mockRes.json).toHaveBeenCalledWith({
+      message: 'Internal Server Error',
+    });
+    expect(consoleErrorMock).toHaveBeenCalledWith(genericError);
+  });
 });
