@@ -24,23 +24,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('API is running');
 });
 
-// app.post(
-//   '/upload',
-//   upload.single('rag-file'),
-//   (req: Request, res: Response, next: NextFunction) => {
-//     console.log('Uploaded file:', req.file);
-//     if (!req.file) {
-//       return res.status(400).json({ error: 'No file uploaded' });
-//     }
-//     res.status(200).json({
-//       message: 'File uploaded successfully',
-//       filename: req.file.filename,
-//       originalname: req.file.originalname,
-//       size: req.file.size,
-//     });
-//   },
-// );
-
 app.use(errorHandler);
 
 export default app;
