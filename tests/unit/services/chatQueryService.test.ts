@@ -1,6 +1,6 @@
 import {
   getChatResponse,
-  retrieveContext,
+  retrieveDocs,
   saveChatHistory,
 } from '@/service/chatQueryService.js';
 import type { Chat } from '@/service/chatQueryService.js';
@@ -34,11 +34,15 @@ describe('chatQueryService', () => {
         { pageContent: 'My phone number is 123-456-7890' },
         { pageContent: 'Feel free to connect on LinkedIn' },
       ];
+      const results = 3;
       (vectorStore.similaritySearch as jest.Mock).mockResolvedValue(
         mockContactDocs,
       );
-      const context = await retrieveContext(userQuery);
-      expect(vectorStore.similaritySearch).toHaveBeenCalledWith(userQuery, 3);
+      const context = await retrieveDocs(userQuery, results);
+      expect(vectorStore.similaritySearch).toHaveBeenCalledWith(
+        userQuery,
+        results,
+      );
       expect(context).toEqual(mockContactDocs);
     });
     it('should return empty context if no relevant documents found', async () => {});

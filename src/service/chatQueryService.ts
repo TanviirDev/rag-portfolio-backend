@@ -1,7 +1,7 @@
 import { Document } from 'langchain/document';
 import vectorStore from '@/config/vectorStore.js';
 import * as z from 'zod';
-import { tool } from '@langchain/core/tools';
+import queryAgent from '@/agents/queryAgent.js';
 
 const retrieveSchema = z.object({ query: z.string() });
 // const retrieveTool = tool({});
@@ -15,11 +15,12 @@ export const getChatResponse = async (
   chatHistory: Chat[],
 ): Promise<string> => {};
 
-export const retrieveContext = async (
+export const retrieveDocs = async (
   userQuery: string,
+  results?: number,
 ): Promise<Document[]> => {
   try {
-    const context = await vectorStore.similaritySearch(userQuery, 3);
+    const context = await vectorStore.similaritySearch(userQuery, results);
     return context;
   } catch (error) {
     throw new Error('Error retrieving context from vector store: ' + error);
