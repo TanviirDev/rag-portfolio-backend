@@ -9,6 +9,8 @@ import {
 } from '@/service/vectorService.js';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { getDb } from '@/config/mongoDb.js';
+import vectorStore from '@/config/vectorStore.js';
 
 //LOADER MOCK
 const mockLoad = jest.fn();
@@ -40,7 +42,6 @@ jest.mock('@/config/vectorStore.js', () => {
     },
   };
 });
-const vectorStore = require('@/config/vectorStore.js').default;
 
 //MONGODB MOCK
 jest.mock('@/config/mongoDb.js', () => {
@@ -49,7 +50,6 @@ jest.mock('@/config/mongoDb.js', () => {
     getDb: jest.fn(),
   };
 });
-const { getDb } = require('@/config/mongoDb.js');
 
 let consoleErrorSpy: jest.SpyInstance;
 let consoleLogSpy: jest.SpyInstance;
