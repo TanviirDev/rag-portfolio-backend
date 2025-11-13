@@ -1,7 +1,6 @@
 import {
   getChatResponse,
   retrieveContext,
-  constructPrompt,
   saveChatHistory,
 } from '@/service/chatQueryService.js';
 import type { Chat } from '@/service/chatQueryService.js';
