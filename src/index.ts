@@ -11,8 +11,10 @@ import {
 } from './service/vectorService.js';
 import { connectMongoDB, disconnectMongoDB, getDb } from './config/mongoDb.js';
 import { deleteUploadedFileFromServer } from './service/documentService.js';
-import { getChatResponse } from './service/chatQueryService.js';
-import { get } from 'http';
+import {
+  getChatResponse,
+  streamChatResponse,
+} from './service/chatQueryService.js';
 
 await connectMongoDB();
 
@@ -106,9 +108,12 @@ await connectMongoDB();
 
 //USAGE OF deleteUploadedFileFromServer
 // deleteUploadedFileFromServer('Payments - Universal Credit.pdf');
-const response = await getChatResponse(
+const response = await streamChatResponse(
   "Can you provide a brief summary of Tanvir's professional background and key skills?",
   [],
 );
-console.log('Chat Response:', response);
+for await (const chunk of response) {
+  console.log(chunk);
+}
+// console.log('Final Response:', response);
 await disconnectMongoDB();

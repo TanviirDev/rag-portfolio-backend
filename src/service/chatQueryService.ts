@@ -14,12 +14,33 @@ export const getChatResponse = async (
   chatHistory: Chat[],
 ) => {
   try {
-    const result = await queryAgent.invoke({
-      messages: [{ role: 'user', content: userQuery }],
-    });
+    const result = await queryAgent.invoke(
+      {
+        messages: [{ role: 'user', content: userQuery }],
+      },
+      // { streamMode: 'messages' },
+    );
     return result;
   } catch (error) {
     throw new Error('Error getting chat response: ' + error);
+  }
+};
+
+export const streamChatResponse = async (
+  userQuery: string,
+  chatHistory: Chat[],
+): Promise<AsyncIterable<unknown>> => {
+  try {
+    const stream = await queryAgent.stream({
+      messages: [{ role: 'user', content: userQuery }],
+    });
+    return stream as AsyncIterable<unknown>;
+  } catch (error) {
+    throw new Error(
+      'Streaming not supported by current agent/model. ' +
+        'Ensure your LangChain version and model support .stream(): ' +
+        error,
+    );
   }
 };
 
