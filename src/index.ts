@@ -11,6 +11,8 @@ import {
 } from './service/vectorService.js';
 import { connectMongoDB, disconnectMongoDB, getDb } from './config/mongoDb.js';
 import { deleteUploadedFileFromServer } from './service/documentService.js';
+import { getChatResponse } from './service/chatQueryService.js';
+import { get } from 'http';
 
 await connectMongoDB();
 
@@ -104,5 +106,8 @@ await connectMongoDB();
 
 //USAGE OF deleteUploadedFileFromServer
 // deleteUploadedFileFromServer('Payments - Universal Credit.pdf');
+console.log(
+  getChatResponse('What is Tanvirs favorite programming language?', []),
+);
 
 await disconnectMongoDB();

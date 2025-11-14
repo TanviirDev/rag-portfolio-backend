@@ -1,5 +1,5 @@
-import type { Document } from 'langchain/document';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import type { Document } from '@langchain/core/documents';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import vectorStore from '../config/vectorStore.js';
 import { getDb } from '../config/mongoDb.js';

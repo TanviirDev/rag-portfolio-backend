@@ -1,10 +1,9 @@
-import { Document } from 'langchain/document';
+import { Document } from 'langchain';
 import vectorStore from '@/config/vectorStore.js';
 import * as z from 'zod';
 import queryAgent from '@/agents/queryAgent.js';
 
 const retrieveSchema = z.object({ query: z.string() });
-// const retrieveTool = tool({});
 export interface Chat {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -13,7 +12,16 @@ export interface Chat {
 export const getChatResponse = async (
   userQuery: string,
   chatHistory: Chat[],
-): Promise<string> => {};
+) => {
+  try {
+    const result = await queryAgent.invoke({
+      messages: [{ role: 'user', content: userQuery }],
+    });
+    return result;
+  } catch (error) {
+    throw new Error('Error getting chat response: ' + error);
+  }
+};
 
 export const retrieveDocs = async (
   userQuery: string,
