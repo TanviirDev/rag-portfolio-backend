@@ -106,8 +106,9 @@ await connectMongoDB();
 
 //USAGE OF deleteUploadedFileFromServer
 // deleteUploadedFileFromServer('Payments - Universal Credit.pdf');
-console.log(
-  getChatResponse('What is Tanvirs favorite programming language?', []),
+const response = await getChatResponse(
+  "Can you provide a brief summary of Tanvir's professional background and key skills?",
+  [],
 );
-
+console.log('Chat Response:', response);
 await disconnectMongoDB();
