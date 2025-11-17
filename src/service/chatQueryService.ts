@@ -11,15 +11,12 @@ export interface Chat {
 
 export const getChatResponse = async (
   userQuery: string,
-  chatHistory: Chat[],
+  interactionID?: string,
 ) => {
   try {
-    const result = await queryAgent.invoke(
-      {
-        messages: [{ role: 'user', content: userQuery }],
-      },
-      // { streamMode: 'messages' },
-    );
+    const result = await queryAgent.invoke({
+      messages: [{ role: 'user', content: userQuery }],
+    });
     return result;
   } catch (error) {
     throw new Error('Error getting chat response: ' + error);
@@ -28,19 +25,18 @@ export const getChatResponse = async (
 
 export const streamChatResponse = async (
   userQuery: string,
-  chatHistory: Chat[],
+  interactionID?: string,
 ): Promise<AsyncIterable<unknown>> => {
   try {
-    const stream = await queryAgent.stream({
-      messages: [{ role: 'user', content: userQuery }],
-    });
+    const stream = await queryAgent.stream(
+      {
+        messages: [{ role: 'user', content: userQuery }],
+      },
+      // { streamMode: 'messages' },
+    );
     return stream as AsyncIterable<unknown>;
   } catch (error) {
-    throw new Error(
-      'Streaming not supported by current agent/model. ' +
-        'Ensure your LangChain version and model support .stream(): ' +
-        error,
-    );
+    throw new Error('Error streaming chat response: ' + error);
   }
 };
 
