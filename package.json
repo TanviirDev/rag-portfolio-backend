@@ -1,8 +1,8 @@
 {
-  "name": "express",
+  "name": "portfolio-ai-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Ai assistant for web portfolio",
+  "main": "server.js",
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
