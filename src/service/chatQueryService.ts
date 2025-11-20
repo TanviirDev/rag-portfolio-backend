@@ -26,15 +26,15 @@ export const getChatResponse = async (
 export const streamChatResponse = async (
   userQuery: string,
   interactionID?: string,
-): Promise<AsyncIterable<unknown>> => {
+) => {
   try {
     const stream = await queryAgent.stream(
       {
         messages: [{ role: 'user', content: userQuery }],
       },
-      // { streamMode: 'messages' },
+      { streamMode: 'values' },
     );
-    return stream as AsyncIterable<unknown>;
+    return stream;
   } catch (error) {
     throw new Error('Error streaming chat response: ' + error);
   }
