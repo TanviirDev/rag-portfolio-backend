@@ -40,7 +40,7 @@ export const streamChatResponse = async (
   }
 };
 
-export const retrieveDocs = async (
+export const retrieveContextDocs = async (
   userQuery: string,
   results?: number,
 ): Promise<Document[]> => {

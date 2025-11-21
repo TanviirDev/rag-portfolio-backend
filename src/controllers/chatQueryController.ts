@@ -24,12 +24,13 @@ export const handleChatQuery = async (
         const lastMessage = chunk.messages.at(-1);
         if (lastMessage?.content && typeof lastMessage.content === 'string') {
           res.write(JSON.stringify({ message: lastMessage.content }) + '\n');
-        } else if (lastMessage?.tool_calls) {
-          const toolCallNames = lastMessage.tool_calls.map(
-            (tc: any) => tc.tool_name,
-          );
-          res.write(JSON.stringify({ tool_calls: toolCallNames }) + '\n');
         }
+        // else if (lastMessage?.tool_calls) {
+        //   const toolCallNames = lastMessage.tool_calls.map(
+        //     (tc: any) => tc.tool_name,
+        //   );
+        //   res.write(JSON.stringify({ tool_calls: toolCallNames }) + '\n');
+        // }
       }
       res.end();
     } else {

@@ -1,12 +1,12 @@
 import * as z from 'zod';
 import { tool } from '@langchain/core/tools';
-import { retrieveDocs } from '@/service/chatQueryService.js';
+import { retrieveContextDocs } from '@/service/chatQueryService.js';
 
 const retrieveSchema = z.object({ query: z.string() });
 
 const retrieveContext = tool(
   async ({ query }) => {
-    const retrievedDocs = await retrieveDocs(query, 3);
+    const retrievedDocs = await retrieveContextDocs(query, 3);
     const serialized = retrievedDocs
       .map(
         (doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`,
