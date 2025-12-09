@@ -21,16 +21,13 @@ export const handleChatQuery = async (
       res.flushHeaders();
       const stream = await streamChatResponse(userQuery, interactionID);
       for await (const chunk of stream) {
-        const lastMessage = chunk.messages.at(-1);
-        if (lastMessage?.content && typeof lastMessage.content === 'string') {
-          res.write(JSON.stringify({ message: lastMessage.content }) + '\n');
+        const messages = chunk;
+        if (messages && Array.isArray(messages) && messages.length > 0) {
+          const aiMessage = messages[0]?.content;
+          if (aiMessage && typeof aiMessage === 'string') {
+            res.write(JSON.stringify({ message: aiMessage }) + '\n');
+          }
         }
-        // else if (lastMessage?.tool_calls) {
-        //   const toolCallNames = lastMessage.tool_calls.map(
-        //     (tc: any) => tc.tool_name,
-        //   );
-        //   res.write(JSON.stringify({ tool_calls: toolCallNames }) + '\n');
-        // }
       }
       res.end();
     } else {

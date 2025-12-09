@@ -3,6 +3,6 @@ import { handleChatQuery } from '@/controllers/chatQueryController.js';
 
 const router = Router();
 
-router.post('/chat', handleChatQuery);
+router.post('/chats', handleChatQuery);
 
 export default router;

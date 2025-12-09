@@ -32,7 +32,9 @@ export const streamChatResponse = async (
       {
         messages: [{ role: 'user', content: userQuery }],
       },
-      { streamMode: 'values' },
+      {
+        streamMode: 'messages',
+      },
     );
     return stream;
   } catch (error) {
