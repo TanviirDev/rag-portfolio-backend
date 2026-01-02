@@ -4,6 +4,7 @@ import {
   streamChatResponse,
 } from '../service/chatQueryService.js';
 import e from 'express';
+import { AIMessageChunk } from 'langchain';
 
 export const handleChatQuery = async (
   req: Request,
@@ -15,15 +16,17 @@ export const handleChatQuery = async (
     const userQuery = req.body.userQuery;
     const interactionID = req.body.interactionID;
     if (isStream) {
-      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Type', 'application/x-ndjson');
+      res.setHeader('Transfer-Encoding', 'chunked');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
       res.flushHeaders();
       const stream = await streamChatResponse(userQuery, interactionID);
       for await (const chunk of stream) {
-        const messages = chunk;
-        if (messages && Array.isArray(messages) && messages.length > 0) {
-          const aiMessage = messages[0]?.content;
+        // console.log(chunk);
+        if (chunk && Array.isArray(chunk) && chunk.length > 0) {
+          const aiMessage =
+            chunk[0] instanceof AIMessageChunk ? chunk[0].content : null;
           if (aiMessage && typeof aiMessage === 'string') {
             res.write(JSON.stringify({ message: aiMessage }) + '\n');
           }
